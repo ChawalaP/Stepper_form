@@ -9,6 +9,7 @@ class Stepper_Form extends StatefulWidget {
 }
 
 class _Stepper_FormState extends State<Stepper_Form> {
+  GlobalKey<FormState> _formKey =  GlobalKey<FormState>();
   int activeStepIndex = 0;
   TextEditingController name = TextEditingController();
   TextEditingController age = TextEditingController();
@@ -20,7 +21,7 @@ class _Stepper_FormState extends State<Stepper_Form> {
   TextEditingController district= TextEditingController();
   TextEditingController province = TextEditingController();
   TextEditingController postal_code = TextEditingController();
-  var isLastStep = false;
+
 
   @override
   void dispose() {
@@ -41,59 +42,62 @@ class _Stepper_FormState extends State<Stepper_Form> {
       state: activeStepIndex <= 0 ? StepState.editing : StepState.complete,
       isActive: activeStepIndex >= 0,
       title: const Text('ข้อมูลส่วนตัว'),
-      content: Column(
-        children: [
-          TextField(
-            controller: name,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'ชื่อนามสกุล',
+      content: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: name,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'ชื่อนามสกุล',
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          TextField(
-            controller: age,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'อายุ',
+            const SizedBox(
+              height: 8,
             ),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          TextField(
-            controller: weight,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'น้ำหนัก',
+            TextFormField(
+              controller: age,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'อายุ',
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          TextField(
-            controller: height,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'ส่วนสูง',
+            const SizedBox(
+              height: 8,
             ),
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          TextField(
-            controller: blood_type,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'กรุ๊ปเลือด',
+            TextFormField(
+              controller: weight,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'น้ำหนัก',
+              ),
             ),
-          ),
-        ],
+            const SizedBox(
+              height: 8,
+            ),
+            TextFormField(
+              controller: height,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'ส่วนสูง',
+              ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            TextFormField(
+              controller: blood_type,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'กรุ๊ปเลือด',
+              ),
+            ),
+          ],
+        ),
       ),
     ),
     Step(
@@ -106,7 +110,7 @@ class _Stepper_FormState extends State<Stepper_Form> {
             const SizedBox(
               height: 8,
             ),
-            TextField(
+            TextFormField(
               controller: houseNo,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -116,7 +120,7 @@ class _Stepper_FormState extends State<Stepper_Form> {
             const SizedBox(
               height: 8,
             ),
-            TextField(
+            TextFormField(
               controller: subDistrict,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -126,7 +130,7 @@ class _Stepper_FormState extends State<Stepper_Form> {
             const SizedBox(
               height: 8,
             ),
-            TextField(
+            TextFormField(
               controller: district,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -136,7 +140,7 @@ class _Stepper_FormState extends State<Stepper_Form> {
             const SizedBox(
               height: 8,
             ),
-            TextField(
+            TextFormField(
               controller: province,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
@@ -146,7 +150,7 @@ class _Stepper_FormState extends State<Stepper_Form> {
             const SizedBox(
               height: 8,
             ),
-            TextField(
+            TextFormField(
               controller: postal_code,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
@@ -171,18 +175,26 @@ class _Stepper_FormState extends State<Stepper_Form> {
         currentStep: activeStepIndex,
         steps: stepList(),
         onStepContinue: () {
-          if (activeStepIndex <= 0) {
+          if (activeStepIndex < stepList().length - 1) {
             setState(() {
               activeStepIndex += 1;
             });
+          } else {
+            setState(() {
+              Data(name.text, int.parse(age.text), int.parse(weight.text), int.parse(height.text),
+                  blood_type.text, houseNo.text, subDistrict.text, district.text,
+                  province.text, postal_code.text);
+            });
+            //print('${name.text}');
           }
         },
         onStepCancel: () {
-          if (activeStepIndex > 0) {
-            setState(() {
-              activeStepIndex -= 1;
-            });
+          if (activeStepIndex == 0) {
+            return;
           }
+          setState(() {
+            activeStepIndex -= 1;
+          });
         },
         onStepTapped: (int index) {
           setState(() {
@@ -190,11 +202,14 @@ class _Stepper_FormState extends State<Stepper_Form> {
           });
         },
         controlsBuilder: (BuildContext context, ControlsDetails details) {
+          final isLastStep = activeStepIndex == stepList().length - 1;
           return Row(
             children: <Widget>[
               TextButton(
                 onPressed: details.onStepContinue,
-                child: const Text('ตกลง')
+                child: (isLastStep)
+                    ? const Text('ตกลง')
+                    : const Text('ต่อไป'),
               ),
               const SizedBox(
                 width: 10,
@@ -211,7 +226,3 @@ class _Stepper_FormState extends State<Stepper_Form> {
     );
   }
 }
-
-/* Data(name.text, int.parse(age.text), int.parse(weight.text), int.parse(height.text),
-              blood_type.text, houseNo.text, subDistrict.text, district.text,
-              province.text, postal_code.text);*/
